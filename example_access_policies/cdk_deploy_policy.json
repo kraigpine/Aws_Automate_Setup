@@ -1,0 +1,52 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "VisualEditor0",
+			"Effect": "Allow",
+			"Action": [
+				"cloudformation:CreateStack",
+				"cloudformation:UpdateStack",
+				"cloudformation:DeleteStack",
+				"cloudformation:DescribeStacks",
+				"cloudformation:GetTemplate",
+				"cloudformation:CreateChangeSet",
+				"cloudformation:DescribeChangeSet",
+				"cloudformation:DeleteChangeSet",
+				"cloudformation:ExecuteChangeSet",
+				"cloudformation:DescribeStackEvents",
+				"iam:CreateRole",
+				"iam:GetRole",
+				"iam:DeleteRole",
+				"iam:AttachRolePolicy",
+				"iam:DetachRolePolicy",
+				"iam:PutRolePolicy",
+				"iam:PassRole",
+				"s3:*",
+				"sqs:*",
+				"sns:*",
+				"ssm:GetParameter",
+				"ssm:GetParameters",
+				"ssm:PutParameter",
+				"ssm:GetParametersByPath"
+			],
+			"Resource": [
+				"arn:aws:cloudformation:<region>:<account_number>:stack/CDKToolkit/*",
+				"arn:aws:ssm:<region>:<account_number>:parameter/cdk-bootstrap/*",
+				"arn:aws:ecr:<region>:<account_number>:repository/cdk-*",
+				"arn:aws:iam::<account_number>:role/cdk-*",
+				"arn:aws:s3:::cdk-*"
+			]
+		},
+		{
+			"Sid": "VisualEditor1",
+			"Effect": "Allow",
+			"Action": [
+				"sts:AssumeRole"
+			],
+			"Resource": [
+				"arn:aws:iam::<account_number>:role/*"
+			]
+		}
+	]
+}
