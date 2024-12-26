@@ -12,7 +12,7 @@ class BudgetAlertStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        # 1. Create SNS Topic for Budget Alerts
+        '''# 1. Create SNS Topic for Budget Alerts
         budget_alert_topic = sns.Topic(self, "BudgetAlertTopic") 
 
         # 2. Create Budget with Notification
@@ -55,4 +55,5 @@ class BudgetAlertStack(Stack):
             }
         )
 
-        sns_email.add_subscription(subscriptions.EmailSubscription("kraigpine@gmail.com"))
+        sns_email.add_subscription(subscriptions.EmailSubscription("you@email.com"))
+        '''
