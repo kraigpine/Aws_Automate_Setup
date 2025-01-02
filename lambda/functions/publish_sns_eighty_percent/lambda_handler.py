@@ -4,8 +4,8 @@ def lambda_handler(event, context):
     sns_client = boto3.client('sns')
 
     # Replace with your desired subject and message
-    subject = "Aws Budget Alert - 80 percent - Tutorials"
-    message = "You have reached 80 percent of your monthly budget in your Tutorials account"
+    subject = "Aws Budget Alert - 80 percent - <your account type>"
+    message = "You have reached 80 percent of your monthly budget in your <account type> account"
 
     # Replace with the ARN of your SNS topic
     topic_arn = os.environ['TOPIC_ARN'] 

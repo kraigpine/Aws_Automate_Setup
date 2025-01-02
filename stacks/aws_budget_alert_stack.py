@@ -12,48 +12,45 @@ class BudgetAlertStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        '''# 1. Create SNS Topic for Budget Alerts
-        budget_alert_topic = sns.Topic(self, "BudgetAlertTopic") 
-
-        # 2. Create Budget with Notification
-        budget = budgets.Budget(
-            self, "Budget",
-            budget_name="MyMonthlyBudget",
-            budget_limit=budgets.BudgetLimit.of_amount("USD", .01), 
-            budget_type=budgets.BudgetType.COST,
-            notifications=[
-                budgets.Notification(
-                    notification_type=budgets.NotificationType.ACTUAL,
-                    threshold=80,
-                    comparison_operator=budgets.ComparisonOperator.GREATER_THAN,
-                    subscriber=budgets.NotificationSubscriber.sns(budget_alert_topic)
-                )
-            ]
-        )
-
-        # Create the lambda role and 
+        # Create the lambda role and assign policies
+        # - The name of the AWSLambdaBasicExecutionRole is actually: service-role/AWSLambdaBasicExecutionRole
         sns_lambda_role = iam.Role(
             self, "sns_lambda_role",
+            role_name="sns_lambda_role",
             assumed_by=iam.ServicePrincipal('lambda.amazonaws.com'),
             managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSNSFullAccess") 
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSNSFullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole")
             ]
-
         )
 
-        self.sns_email = sns.Topic(self, "sns_email")
+        # Create the sns for the lambda to call (lambda > sns > email)
+        sns_lambda_email = sns.Topic(
+            self, "sns_budget_alert_email",
+            topic_name="sns_budget_alert_email"
+        )
+        sns_lambda_email.add_subscription(subscriptions.EmailSubscription("you@email.com"))
 
+        # Create the lambda function 
         publish_sns_eighty_percent = _lambda.Function(
-            self, "publish_sns_eighty_percent",
-            function_name="publish_sns_eighty_percent",
+            self, "z-publish_sns_eighty_percent",
+            function_name="z-publish_sns_eighty_percent",
             runtime=_lambda.Runtime.PYTHON_3_12,
-            handler="lambda_handler", 
+            handler="lambda_handler.lambda_handler", 
             code=_lambda.Code.from_asset("lambda/functions/publish_sns_eighty_percent"),
             role=sns_lambda_role,
             environment={
-                "TOPIC_ARN": self.sns_email.topic_arn  # Pass the topic ARN as an environment variable
+                "TOPIC_ARN": sns_lambda_email.topic_arn  # Pass the topic ARN as an environment variable
             }
         )
 
-        sns_email.add_subscription(subscriptions.EmailSubscription("you@email.com"))
-        '''
+        # Create SNS Topic for Budget Alert (BA > Sns > lambda)
+        sns_budget_alert_relay = sns.Topic(
+            self, "sns_budget_alert_relay", 
+            topic_name="sns_budget_alert_relay"
+        ) 
+        sns_budget_alert_relay.add_subscription(subscriptions.LambdaSubscription(publish_sns_eighty_percent))
+       
+        # Create Budget with Notification
+        # currently there is no L2 construct for a budget and its just quicker to make this in the console
+        
